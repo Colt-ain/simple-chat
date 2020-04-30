@@ -16,9 +16,21 @@ btn.addEventListener('click', function () {
 		message: message.value,
 		handle: handle.value
 	});
+
+	message.value = '';
 });
 
-message.addEventListener('keypress', function() {
+message.addEventListener('keypress', function(evt) {
+	if (evt.key === 'Enter') {
+		socket.emit('chat', {
+			message: message.value,
+			handle: handle.value
+		});
+
+		message.value = '';
+		return;
+	}
+
 	socket.emit('typing', handle.value);
 	const callback = () => {
 		socket.emit('stop-typing', handle.value);
