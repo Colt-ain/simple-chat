@@ -1,5 +1,6 @@
 // Make connection
 const socket = io.connect('http://localhost:4000');
+let timerId = null;
 
 // QUery DOM
 
@@ -19,16 +20,30 @@ btn.addEventListener('click', function () {
 
 message.addEventListener('keypress', function() {
 	socket.emit('typing', handle.value);
+	const callback = () => {
+		socket.emit('stop-typing', handle.value);
+
+		if (timerId) {
+			clearTimeout(timerId);
+			timerId = null;
+		}
+	};
+
+	if (!timerId) {
+		timerId = setTimeout(callback, 1000);
+	}
 });
 
 socket.on('chat', function(data) {
 	console.log(data);
+	feedback.innerHTML = '';
 	output.innerHTML += '<p><strong>' + data.handle + ':</strong>' + data.message + '</p>';
 });
 
 socket.on('typing', function(data) {
-	if (data === handle.value)
-		return;
-
 	feedback.innerHTML = '<p><em>' + data + ' is typing a message' + ':</em></p>';
+});
+
+socket.on('stop-typing', function(data) {
+	feedback.innerHTML = '';
 });
